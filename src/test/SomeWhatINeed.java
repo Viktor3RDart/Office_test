@@ -1,11 +1,25 @@
 package test;
-
-
 import lombok.SneakyThrows;
-
 import java.sql.*;
 
 public class SomeWhatINeed {
+
+    public final Connection con;
+    public final Statement stm;
+
+    public Connection getCon() {
+        return con;
+    }
+
+    public Statement getStm() {
+        return stm;
+    }
+
+    public SomeWhatINeed() throws SQLException {
+
+        this.con = DriverManager.getConnection("jdbc:h2:.\\Office");;
+        this.stm = con.createStatement();
+    }
     // Вывод на экран всех сотрудников для локального тестирования
     public static void GiveEmployee() {
         try (Connection con = DriverManager.getConnection("jdbc:h2:.\\Office")) {
@@ -67,5 +81,13 @@ public class SomeWhatINeed {
         stm.executeUpdate("INSERT INTO Employee VALUES(4,'Tom',2)");
 
         stm.executeUpdate("INSERT INTO Employee VALUES(5,'Todd',3)");
+    }
+
+    @SneakyThrows
+    public static void DeleteDep(int DepId) {
+        Connection con = DriverManager.getConnection("jdbc:h2:.\\Office");
+        PreparedStatement stm = con.prepareStatement("DELETE FROM Department WHERE ID=?");
+        stm.setInt(1, DepId);
+        stm.executeUpdate();
     }
 }

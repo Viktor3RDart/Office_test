@@ -1,14 +1,14 @@
 package test;
+
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+
 import java.sql.*;
-import static test.SomeWhatINeed.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
-public class TestSql {
-
-    private final Connection con = DriverManager.getConnection("jdbc:h2:.\\Office");
-    private final Statement stm = con.createStatement();
+public class TestSql extends SomeWhatINeed {
 
     public TestSql() throws SQLException {
     }
@@ -48,6 +48,7 @@ public class TestSql {
         }
         GiveEmployee();
         ResetBD();
+        con.close();
     }
 
     // 2. Проверьте имена всех сотрудников. Если чьё-то имя написано с маленькой буквы, исправьте её на большую.
@@ -79,6 +80,7 @@ public class TestSql {
         GiveEmployee();
         System.out.println("Количество измененных имен = " + count);
         ResetBD();
+        con.close();
     }
 
     // 3. Выведите на экран количество сотрудников в IT-отделе
@@ -98,5 +100,47 @@ public class TestSql {
             count += 1;
         }
         System.out.println("Количество сотрудников работающих в " + testDep + " = " + count);
+        con.close();
+    }
+
+    // 4. «При удалении отдела (Department) информация о всех сотрудниках, работающих в этом отделе, должна быть удалена».
+    //
+    //Проверьте, выполняется ли данное требование. Тестированию подлежит непосредственно jar-файл и приложенный
+    // к нему файл БД. Выполните действия по порядку:
+    //
+    //Запустите приложение.
+    //Удалите один из отделов.
+    //Выполните проверку содержимого базы.
+    @Test
+    @SneakyThrows
+    public void test_04_DelDep() {
+        ResetBD();
+        // Получить новый список сотрудников для инфо
+        GiveEmployee();
+        // Назначаем переменные
+        String testDep = "IT";
+        int count = 0;
+        // Ищем сотрудников и собираем инфо для проверки
+        Map<Integer, Integer> list = new HashMap<>();
+        ResultSet rs = stm.executeQuery("Select * from Employee WHERE DepartmentID = " + GiveMeDepId(testDep));
+        while (rs.next()) {
+            list.put(count, rs.getInt("ID"));
+            count++;
+        }
+        //Удаляем отдел
+        DeleteDep(GiveMeDepId(testDep));
+        // Проверяем удалились ли сотрудники из таблицы Employee
+        ResultSet rs2 = stm.executeQuery("Select * from Employee");
+        while (rs2.next()) {
+            for (int i = 0; i < list.size(); i++) {
+                if (rs2.getInt("ID") == list.get(i)) {
+                    throw new AssertionError("Данный сотрудник не был удален, при удалении департамента," +
+                            " ID сотрудника - " + list.get(i) + ", Имя - " + rs2.getString("NAME")
+                            + ", ID департамента в таблице Employee - " + rs2.getString("DepartmentID"));
+                }
+            }
+        }
+        ResetBD();
+        con.close();
     }
 }
