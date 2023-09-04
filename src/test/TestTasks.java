@@ -1,16 +1,19 @@
 package test;
 
 import lombok.SneakyThrows;
+import office.Department;
 import org.junit.jupiter.api.Test;
 
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static office.Service.*;
 
-public class TestSql extends SomeWhatINeed {
 
-    public TestSql() throws SQLException {
+public class TestTasks extends SomeWhatINeed {
+
+    public TestTasks() throws SQLException {
     }
 
     //1. Найдите ID сотрудника с именем Ann. Если такой сотрудник только один, то установите его департамент в HR.
@@ -86,7 +89,7 @@ public class TestSql extends SomeWhatINeed {
     // 3. Выведите на экран количество сотрудников в IT-отделе
     @Test
     @SneakyThrows
-    public void test_03_CountOfEmp() {
+    public void test_03_xCountOfEmp() {
         ResetBD();
         // Получить новый список сотрудников для инфо
         GiveEmployee();
@@ -113,12 +116,13 @@ public class TestSql extends SomeWhatINeed {
     //Выполните проверку содержимого базы.
     @Test
     @SneakyThrows
-    public void test_04_DelDep() {
+    public void test_04_dDelDep() {
         ResetBD();
         // Получить новый список сотрудников для инфо
         GiveEmployee();
         // Назначаем переменные
         String testDep = "IT";
+        Department dep = new Department(GiveMeDepId(testDep), "Delete");
         int count = 0;
         // Ищем сотрудников и собираем инфо для проверки
         Map<Integer, Integer> list = new HashMap<>();
@@ -128,7 +132,7 @@ public class TestSql extends SomeWhatINeed {
             count++;
         }
         //Удаляем отдел
-        DeleteDep(GiveMeDepId(testDep));
+        removeDepartment(dep);
         // Проверяем удалились ли сотрудники из таблицы Employee
         ResultSet rs2 = stm.executeQuery("Select * from Employee");
         while (rs2.next()) {
@@ -140,6 +144,7 @@ public class TestSql extends SomeWhatINeed {
                 }
             }
         }
+        GiveEmployeeNoDep();
         ResetBD();
         con.close();
     }

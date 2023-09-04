@@ -43,11 +43,16 @@ public class Service {
         }
     }
 
+    //1. Внести исправления в имеющийся код, чтобы исполнялось требование
+    // «удалять информацию о сотрудниках удалённого отдела».
     public static void removeDepartment(Department d) {
         try (Connection con = DriverManager.getConnection("jdbc:h2:.\\Office")) {
             PreparedStatement stm = con.prepareStatement("DELETE FROM Department WHERE ID=?");
             stm.setInt(1, d.departmentID);
             stm.executeUpdate();
+            PreparedStatement stmEmp = con.prepareStatement("DELETE FROM Employee WHERE DepartmentID=?");
+            stmEmp.setInt(1, d.departmentID);
+            stmEmp.executeUpdate();
         } catch (Exception e) {
             System.out.println(e);
         }

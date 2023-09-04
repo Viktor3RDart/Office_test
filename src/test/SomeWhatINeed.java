@@ -1,49 +1,49 @@
 package test;
+
 import lombok.SneakyThrows;
+
 import java.sql.*;
 
 public class SomeWhatINeed {
 
-    public final Connection con;
-    public final Statement stm;
-
-    public Connection getCon() {
-        return con;
-    }
-
-    public Statement getStm() {
-        return stm;
-    }
+    public static Connection con = null;
+    public static Statement stm = null;
 
     public SomeWhatINeed() throws SQLException {
 
-        this.con = DriverManager.getConnection("jdbc:h2:.\\Office");;
-        this.stm = con.createStatement();
+        con = DriverManager.getConnection("jdbc:h2:.\\Office");
+        stm = con.createStatement();
     }
+
     // Вывод на экран всех сотрудников для локального тестирования
+    @SneakyThrows
     public static void GiveEmployee() {
-        try (Connection con = DriverManager.getConnection("jdbc:h2:.\\Office")) {
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery("Select Employee.ID, Employee.Name,Department.Name" +
-                    " as DepName from Employee join Department on Employee.DepartmentID=Department.ID");
-            System.out.println("------------------------------------");
-            while (rs.next()) {
-                System.out.println(rs.getInt("ID") + "\t" + rs.getString("NAME") + "\t"
-                        + rs.getString("DepName"));
-            }
-            System.out.println("------------------------------------");
-        } catch (
-                SQLException e) {
-            System.out.println(e);
+        ResultSet rs = stm.executeQuery("Select Employee.ID, Employee.Name,Department.Name" +
+                " as DepName from Employee join Department on Employee.DepartmentID=Department.ID");
+        System.out.println("------------------------------------");
+        while (rs.next()) {
+            System.out.println(rs.getInt("ID") + "\t" + rs.getString("NAME") + "\t"
+                    + rs.getString("DepName"));
         }
+        System.out.println("------------------------------------");
+    }
+
+    // Вывод на экран всех сотрудников для локального тестирования
+    @SneakyThrows
+    public static void GiveEmployeeNoDep() {
+        ResultSet rs = stm.executeQuery("Select ID, Name,DepartmentID from Employee");
+        System.out.println("------------------------------------");
+        while (rs.next()) {
+            System.out.println(rs.getInt("ID") + "\t" + rs.getString("NAME") + "\t"
+                    + rs.getString("DepartmentID"));
+        }
+        System.out.println("------------------------------------");
     }
 
     // Запросить ID по наименованию департамента
     @SneakyThrows
     public static int GiveMeDepId(String DepName) {
         int num = 0;
-        Connection con = DriverManager.getConnection("jdbc:h2:.\\Office");
-        Statement stm = con.createStatement();
         ResultSet rs = stm.executeQuery("Select Department.ID from Department where name ="
                 + "'" + DepName + "'");
         while (rs.next()) {
@@ -54,7 +54,6 @@ public class SomeWhatINeed {
 
     @SneakyThrows
     public static void NewEmployee(int ID, String Name, int DepId) {
-        Connection con = DriverManager.getConnection("jdbc:h2:.\\Office");
         PreparedStatement stm = con.prepareStatement("INSERT INTO Employee VALUES(?,?,?)");
         stm.setInt(1, ID);
         stm.setString(2, Name);
@@ -64,8 +63,6 @@ public class SomeWhatINeed {
 
     @SneakyThrows
     public static void ResetBD() {
-        Connection con = DriverManager.getConnection("jdbc:h2:.\\Office");
-        Statement stm = con.createStatement();
         stm.executeUpdate("DROP TABLE Department IF EXISTS");
         stm.executeUpdate("CREATE TABLE Department(ID INT PRIMARY KEY, NAME VARCHAR(255))");
         stm.executeUpdate("INSERT INTO Department VALUES(1,'Accounting')");
@@ -81,13 +78,5 @@ public class SomeWhatINeed {
         stm.executeUpdate("INSERT INTO Employee VALUES(4,'Tom',2)");
 
         stm.executeUpdate("INSERT INTO Employee VALUES(5,'Todd',3)");
-    }
-
-    @SneakyThrows
-    public static void DeleteDep(int DepId) {
-        Connection con = DriverManager.getConnection("jdbc:h2:.\\Office");
-        PreparedStatement stm = con.prepareStatement("DELETE FROM Department WHERE ID=?");
-        stm.setInt(1, DepId);
-        stm.executeUpdate();
     }
 }
